@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logaritma - Febiriani, S.Pd.</title>
+    
+    <!-- Tailwind CSS untuk Styling bernuansa ceria -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Nunito untuk kesan ramah dan menyenangkan -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX untuk merender rumus matematika dengan rapi -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+    <!-- Canvas Confetti untuk efek perayaan saat kuis benar -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fdfbfb;
+            background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+            overflow-x: hidden;
+        }
+
+        /* Animasi Gempa untuk Lab */
+        :root {
+            --shake-intensity: 0px;
+        }
+
+        @keyframes earthquake {
+            0% { transform: translate(calc(var(--shake-intensity) * 1), calc(var(--shake-intensity) * 1)) rotate(0deg); }
+            10% { transform: translate(calc(var(--shake-intensity) * -1), calc(var(--shake-intensity) * -2)) rotate(-1deg); }
+            20% { transform: translate(calc(var(--shake-intensity) * -3), calc(var(--shake-intensity) * 0)) rotate(1deg); }
+            30% { transform: translate(calc(var(--shake-intensity) * 3), calc(var(--shake-intensity) * 2)) rotate(0deg); }
+            40% { transform: translate(calc(var(--shake-intensity) * 1), calc(var(--shake-intensity) * -1)) rotate(1deg); }
+            50% { transform: translate(calc(var(--shake-intensity) * -1), calc(var(--shake-intensity) * 2)) rotate(-1deg); }
+            60% { transform: translate(calc(var(--shake-intensity) * -3), calc(var(--shake-intensity) * 1)) rotate(0deg); }
+            70% { transform: translate(calc(var(--shake-intensity) * 3), calc(var(--shake-intensity) * 1)) rotate(-1deg); }
+            80% { transform: translate(calc(var(--shake-intensity) * -1), calc(var(--shake-intensity) * -1)) rotate(1deg); }
+            90% { transform: translate(calc(var(--shake-intensity) * 1), calc(var(--shake-intensity) * 2)) rotate(0deg); }
+            100% { transform: translate(calc(var(--shake-intensity) * 1), calc(var(--shake-intensity) * -2)) rotate(-1deg); }
+        }
+
+        .shake-element {
+            animation: earthquake 0.3s infinite;
+            display: inline-block;
+        }
+
+        /* Kartu Sifat Hover Effect */
+        .property-card {
+            transition: all 0.3s ease;
+        }
+        .property-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Sembunyikan elemen yang tidak aktif */
+        .hidden-section {
+            display: none;
+        }
+
+        /* Kustomisasi Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+            background: #ff4757;
+            cursor: pointer;
+            margin-top: -10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 10px;
+            cursor: pointer;
+            background: #ffa502;
+            border-radius: 5px;
+        }
+
+        .level-node {
+            transition: all 0.3s ease;
+        }
+        .level-active {
+            box-shadow: 0 0 0 4px #fbc531;
+            transform: scale(1.15);
+            background-color: #fbc531;
+            color: white;
+            border-color: #e1b12c;
+        }
+        .level-passed {
+            background-color: #4cd137;
+            color: white;
+            border-color: #44bd32;
+        }
+        .match-btn {
+            transition: all 0.2s ease;
+        }
+        .match-selected {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+            transform: scale(1.02);
+        }
+        .match-correct {
+            background-color: #d1fae5 !important;
+            border-color: #10b981 !important;
+            color: #065f46;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+        .match-wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            animation: shakeError 0.4s;
+        }
+        .ms-selected {
+            background-color: #e0e7ff;
+            border-color: #6366f1;
+            box-shadow: inset 0 0 0 2px #6366f1;
+        }
+        @keyframes shakeError {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        /* Sembunyikan scrollbar untuk map */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- HEADER AREA -->
+    <header class="bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-500 text-white pt-10 pb-16 px-6 text-center rounded-b-[3rem] shadow-xl relative z-10">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl md:text-5xl font-black mb-4 drop-shadow-md">🚀 Logaritma 🌟</h1>
+            <p class="text-xl md:text-2xl font-semibold opacity-90 mb-6">Belajar Logaritma Jadi Mudah, Nyata, dan Menyenangkan!</p>
+            <div class="inline-block bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full border border-white/30 shadow-inner">
+                <p class="text-lg font-bold"><span class="text-yellow-300 text-xl tracking-wide">Febiriani, S.Pd.</span></p>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <div class="max-w-4xl mx-auto w-full -mt-8 relative z-20 px-4">
+        <div class="bg-white rounded-2xl shadow-lg p-2 flex justify-between md:justify-center gap-2 md:gap-6">
+            <button onclick="switchTab('animasi')" id="btn-animasi" class="tab-btn flex-1 md:flex-none px-4 md:px-8 py-3 rounded-xl font-bold text-sm md:text-lg bg-pink-100 text-pink-600 border-2 border-pink-400 transition-all hover:bg-pink-200">
+                🎮 Animasi
+            </button>
+            <button onclick="switchTab('materi')" id="btn-materi" class="tab-btn flex-1 md:flex-none px-4 md:px-8 py-3 rounded-xl font-bold text-sm md:text-lg text-gray-500 transition-all hover:bg-purple-100">
+                📚 Sifat-sifat
+            </button>
+            <button onclick="switchTab('latihan')" id="btn-latihan" class="tab-btn flex-1 md:flex-none px-4 md:px-8 py-3 rounded-xl font-bold text-sm md:text-lg text-gray-500 transition-all hover:bg-green-100">
+                🏆 Kuis Seru
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow max-w-5xl mx-auto w-full p-6 mt-4 mb-10">
+
+        <!-- SECTION 1: ANIMASI & KEBERMANFAATAN -->
+        <section id="sec-animasi" class="bg-white rounded-3xl shadow-xl p-6 md:p-10 border-t-8 border-pink-400">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-black text-gray-800 mb-4">Buat Apa Sih Belajar Logaritma? 🤔</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Logaritma itu "alat sulap" matematika! Ia bisa menyederhanakan angka yang <b>sangat besar</b> (atau sangat kecil) menjadi angka yang mudah dibaca. 
+                    Contoh nyatanya adalah <b>Skala Richter</b> pada gempa bumi. Ayo kita simulasikan!
+                </p>
+            </div>
+
+            <div class="bg-blue-50 rounded-2xl p-6 md:p-10 border-2 border-blue-100 relative overflow-hidden flex flex-col md:flex-row gap-8 items-center">
+                
+                <!-- Animasi Area -->
+                <div class="flex-1 text-center w-full">
+                    <div class="h-48 md:h-64 flex items-end justify-center border-b-4 border-gray-800 pb-2 relative">
+                        <div id="city-scape" class="shake-element text-7xl md:text-9xl transition-transform duration-75">
+                            🏙️🏠🌳
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <label for="richterSlider" class="block text-xl font-bold text-gray-700 mb-4">
+                            Geser Kekuatan Gempa: <span id="richter-label" class="text-3xl text-red-500">1</span> SR
+                        </label>
+                        <input type="range" id="richterSlider" min="1" max="9" value="1" class="w-full max-w-md mx-auto">
+                    </div>
+                </div>
+
+                <!-- Data Penjelasan -->
+                <div class="flex-1 bg-white p-6 rounded-2xl shadow-md w-full">
+                    <h3 class="text-2xl font-bold text-blue-600 mb-4">Data Seismograf 📊</h3>
+                    
+                    <div class="mb-4">
+                        <p class="text-gray-500 font-bold uppercase text-sm">Skala Richter (Logaritma):</p>
+                        <p class="text-4xl font-black text-gray-800" id="data-richter">1</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="text-gray-500 font-bold uppercase text-sm">Energi Asli yang Dilepaskan:</p>
+                        <p class="text-3xl font-black text-red-500 overflow-hidden text-ellipsis" id="data-energi">10</p>
+                        <p class="text-sm text-gray-400 mt-1" id="data-energi-math">\(10^1\)</p>
+                    </div>
+
+                    <!-- Bentuk Logaritma -->
+                    <div class="mb-4 bg-purple-50 p-4 rounded-xl border-2 border-purple-200">
+                        <p class="text-purple-600 font-bold uppercase text-sm mb-2">Bentuk Logaritmanya:</p>
+                        <div class="bg-white p-3 rounded-lg text-center shadow-sm">
+                            <p class="text-xl md:text-2xl font-bold text-purple-900" id="data-logaritma-math">\({}^{10} \log 10^{1} = 1\)</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-yellow-100 p-4 rounded-xl border border-yellow-300">
+                        <p class="text-yellow-800 font-semibold text-sm">
+                            💡 <b>Kesimpulan:</b> Daripada menyebut energi gempa sebesar <span id="kesimpulan-energi" class="font-bold">10</span>, para ilmuwan menggunakan Logaritma basis 10 agar angkanya menjadi <span id="kesimpulan-richter" class="font-bold text-lg">1</span>. Jauh lebih mudah dicatat, kan?
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: SIFAT-SIFAT LOGARITMA -->
+        <section id="sec-materi" class="hidden-section bg-white rounded-3xl shadow-xl p-6 md:p-10 border-t-8 border-purple-400">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-black text-gray-800 mb-4">Sifat-Sifat Ajaib Logaritma ✨</h2>
+                <p class="text-lg text-gray-600">
+                    Bentuk umum Logaritma: <span class="font-bold text-xl inline-block bg-purple-100 px-3 py-1 rounded-lg text-purple-700">\({}^a \log b = c\)</span> artinya <span class="font-bold text-xl inline-block bg-pink-100 px-3 py-1 rounded-lg text-pink-700">\(a^c = b\)</span>
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Sifat 1 -->
+                <div class="property-card bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 p-6 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-green-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl">1</div>
+                        <h3 class="text-xl font-bold text-green-800">Sifat Penjumlahan</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-inner mb-4 text-center text-xl text-gray-800">
+                        \({}^a \log(b \times c) = {}^a \log b + {}^a \log c\)
+                    </div>
+                    <button onclick="toggleContoh('contoh1')" class="w-full py-2 bg-green-200 text-green-800 font-bold rounded-lg hover:bg-green-300 transition">Lihat Contoh 👁️️</button>
+                    <div id="contoh1" class="hidden mt-4 bg-white p-4 rounded-lg border-l-4 border-green-500 text-gray-700">
+                        \({}^2 \log(4 \times 8) = {}^2 \log 4 + {}^2 \log 8\) <br>
+                        \(= 2 + 3\) <br>
+                        \(= 5\)
+                    </div>
+                </div>
+
+                <!-- Sifat 2 -->
+                <div class="property-card bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 p-6 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl">2</div>
+                        <h3 class="text-xl font-bold text-blue-800">Sifat Pengurangan</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-inner mb-4 text-center text-xl text-gray-800">
+                        \({}^a \log(\frac{b}{c}) = {}^a \log b - {}^a \log c\)
+                    </div>
+                    <button onclick="toggleContoh('contoh2')" class="w-full py-2 bg-blue-200 text-blue-800 font-bold rounded-lg hover:bg-blue-300 transition">Lihat Contoh 👁️</button>
+                    <div id="contoh2" class="hidden mt-4 bg-white p-4 rounded-lg border-l-4 border-blue-500 text-gray-700">
+                        \({}^3 \log(\frac{81}{9}) = {}^3 \log 81 - {}^3 \log 9\) <br>
+                        \(= 4 - 2\) <br>
+                        \(= 2\)
+                    </div>
+                </div>
+
+                <!-- Sifat 3 -->
+                <div class="property-card bg-gradient-to-br from-pink-50 to-pink-100 border-2 border-pink-200 p-6 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl">3</div>
+                        <h3 class="text-xl font-bold text-pink-800">Sifat Pangkat</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-inner mb-4 text-center text-xl text-gray-800">
+                        \({}^a \log(b^n) = n \times {}^a \log b\)
+                    </div>
+                    <button onclick="toggleContoh('contoh3')" class="w-full py-2 bg-pink-200 text-pink-800 font-bold rounded-lg hover:bg-pink-300 transition">Lihat Contoh 👁️</button>
+                    <div id="contoh3" class="hidden mt-4 bg-white p-4 rounded-lg border-l-4 border-pink-500 text-gray-700">
+                        \({}^2 \log(8^4) = 4 \times {}^2 \log 8\) <br>
+                        \(= 4 \times 3\) <br>
+                        \(= 12\)
+                    </div>
+                </div>
+
+                <!-- Sifat 4 -->
+                <div class="property-card bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 p-6 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-yellow-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl">4</div>
+                        <h3 class="text-xl font-bold text-yellow-800">Sifat Basis Sama & 1</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-inner mb-4 text-center text-xl text-gray-800">
+                        \({}^a \log a = 1\)  &nbsp; dan &nbsp;  \({}^a \log 1 = 0\)
+                    </div>
+                    <button onclick="toggleContoh('contoh4')" class="w-full py-2 bg-yellow-200 text-yellow-800 font-bold rounded-lg hover:bg-yellow-300 transition">Lihat Contoh 👁️</button>
+                    <div id="contoh4" class="hidden mt-4 bg-white p-4 rounded-lg border-l-4 border-yellow-500 text-gray-700 flex flex-col gap-2">
+                        <span>Karena \(5^1 = 5\), maka \({}^5 \log 5 = 1\)</span>
+                        <span>Karena \(7^0 = 1\), maka \({}^7 \log 1 = 0\)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: KUIS LATIHAN -->
+        <section id="sec-latihan" class="hidden-section bg-white rounded-3xl shadow-xl p-6 md:p-10 border-t-8 border-green-400">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-black text-gray-800 mb-2">🗺️ Petualangan Logaritma ⚔️</h2>
+                <p class="text-lg text-gray-600">Taklukkan 10 tantangan di berbagai wilayah untuk menemukan harta karun Logaritma!</p>
+            </div>
+
+            <div class="w-full overflow-x-auto pb-6 mb-4 hide-scrollbar">
+                <div class="flex items-center justify-between min-w-[700px] relative px-4 mx-auto" id="adventure-map">
+                    <!-- Garis penghubung -->
+                    <div class="absolute top-1/2 left-8 right-8 h-1 bg-gray-200 -z-10 transform -translate-y-1/2"></div>
+                    <div id="progress-line" class="absolute top-1/2 left-8 h-1 bg-green-500 -z-10 transform -translate-y-1/2 transition-all duration-500" style="width: 0%;"></div>
+                    
+                    <!-- Titik-titik level di-generate oleh JS -->
+                </div>
+            </div>
+
+            <!-- Quiz Container -->
+            <div id="quiz-container" class="max-w-3xl mx-auto bg-gray-50 rounded-2xl p-6 md:p-8 border-2 border-gray-200 shadow-sm relative overflow-hidden">
+                
+                <div class="flex justify-between items-center mb-4 border-b-2 border-gray-200 pb-4">
+                    <div>
+                        <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-sm tracking-wide uppercase" id="level-title-badge">Level 1</span>
+                    </div>
+                    <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-bold text-sm">Poin: <span id="score-display">0</span>/1000</span>
+                </div>
+
+                <div class="mb-6 text-center">
+                    <p id="level-story" class="italic text-gray-600 mb-4 bg-orange-50 p-3 rounded-lg border border-orange-100"></p>
+                    <div id="question-text" class="text-xl md:text-2xl font-bold text-gray-800 flex items-center justify-center">
+                        <!-- Pertanyaan dirender disini -->
+                    </div>
+                </div>
+
+                <!-- Opsi Jawaban (Dinamis sesuai tipe soal) -->
+                <div id="dynamic-input-area" class="w-full">
+                    <!-- Area ini akan diisi tombol PG, Input Essay, Checkbox, atau Drag/Match -->
+                </div>
+
+                <!-- Feedback & Next Button -->
+                <div id="feedback-container" class="hidden mt-6 text-center border-t-2 border-gray-200 pt-6">
+                    <p id="feedback-text" class="text-2xl font-bold mb-4"></p>
+                    <div id="feedback-explanation" class="bg-white p-4 rounded-xl mb-6 text-gray-700 border-2 text-left text-lg shadow-inner"></div>
+                    <button id="next-btn" onclick="nextLevel()" class="bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white font-black text-lg py-3 px-10 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                        Lanjut Petualangan ➡️
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hasil Akhir -->
+            <div id="result-container" class="hidden max-w-2xl mx-auto text-center py-10">
+                <h3 class="text-5xl font-black text-gray-800 mb-4">Misi Selesai! 🎉</h3>
+                <p class="text-xl text-gray-600 mb-6">Kamu telah berhasil menaklukkan semua rintangan di dunia Logaritma!</p>
+                
+                <div class="inline-block bg-gradient-to-br from-yellow-300 via-yellow-400 to-orange-500 text-white px-12 py-8 rounded-3xl shadow-2xl mb-8 transform rotate-2">
+                    <p class="text-lg font-bold mb-2 opacity-90">Total Poin Harta Karun</p>
+                    <span id="final-score" class="text-7xl font-black drop-shadow-lg">1000</span>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row justify-center gap-4 mt-4">
+                    <button onclick="resetPetualangan()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                        🔄 Petualang Lagi
+                    </button>
+                    <button onclick="switchTab('materi')" class="bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                        📚 Baca Ulang Mantera (Materi)
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-800 text-white text-center py-6 mt-auto">
+        <p class="font-medium text-gray-300">Dibuat khusus untuk mempermudah pembelajaran Matematika.</p>
+        <p class="font-bold text-pink-400 mt-1">Hak Cipta © 2026 - Febiriani, S.Pd.</p>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- 1. LOGIKA TAB NAVIGASI ---
+        function switchTab(tabId) {
+            // Sembunyikan semua section
+            document.getElementById('sec-animasi').classList.add('hidden-section');
+            document.getElementById('sec-materi').classList.add('hidden-section');
+            document.getElementById('sec-latihan').classList.add('hidden-section');
+
+            // Reset styling tombol
+            const buttons = ['btn-animasi', 'btn-materi', 'btn-latihan'];
+            const colors = {
+                'btn-animasi': ['bg-pink-100', 'text-pink-600', 'border-2', 'border-pink-400'],
+                'btn-materi': ['bg-purple-100', 'text-purple-600', 'border-2', 'border-purple-400'],
+                'btn-latihan': ['bg-green-100', 'text-green-600', 'border-2', 'border-green-400']
+            };
+
+            buttons.forEach(btn => {
+                const el = document.getElementById(btn);
+                el.className = 'tab-btn flex-1 md:flex-none px-4 md:px-8 py-3 rounded-xl font-bold text-sm md:text-lg text-gray-500 transition-all hover:bg-gray-100';
+            });
+
+            // Tampilkan section yang dipilih
+            document.getElementById('sec-' + tabId).classList.remove('hidden-section');
+            
+            // Beri style aktif pada tombol
+            const activeBtn = document.getElementById('btn-' + tabId);
+            const activeClasses = colors['btn-' + tabId];
+            activeBtn.classList.remove('text-gray-500', 'hover:bg-gray-100');
+            activeBtn.classList.add(...activeClasses);
+        }
+
+        // --- 2. LOGIKA ANIMASI GEMPA (SKALA RICHTER) ---
+        const slider = document.getElementById('richterSlider');
+        const root = document.documentElement;
+        
+        slider.addEventListener('input', function() {
+            let val = parseInt(this.value);
+            
+            // Update Text
+            document.getElementById('richter-label').innerText = val;
+            document.getElementById('data-richter').innerText = val;
+            document.getElementById('kesimpulan-richter').innerText = val;
+            
+            // Hitung eksponen untuk visualisasi
+            let energy = Math.pow(10, val);
+            
+            // Update Text Energi
+            // Gunakan BigInt atau string formatting jika angka terlalu besar
+            let energyString = energy.toLocaleString('id-ID');
+            document.getElementById('data-energi').innerText = energyString;
+            document.getElementById('kesimpulan-energi').innerText = energyString;
+            
+            // Render KaTeX untuk math eksponen
+            document.getElementById('data-energi-math').innerHTML = `\\(10^{${val}}\\)`;
+            renderMathInElement(document.getElementById('data-energi-math'));
+
+            // Render KaTeX untuk bentuk logaritma
+            document.getElementById('data-logaritma-math').innerHTML = `\\({}^{10} \\log 10^{${val}} = ${val}\\)`;
+            renderMathInElement(document.getElementById('data-logaritma-math'));
+
+            // Update intensitas getaran CSS
+            // Skala 1 (0px) sampai Skala 9 (max goyang)
+            let shakePixels = Math.pow(1.5, val) * 0.2; 
+            root.style.setProperty('--shake-intensity', `${shakePixels}px`);
+        });
+
+
+        // --- 3. LOGIKA KARTU SIFAT MATERI ---
+        function toggleContoh(id) {
+            const el = document.getElementById(id);
+            if(el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                renderMathInElement(el);
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        // --- 4. LOGIKA KUIS PETUALANGAN (BERVARIASI) ---
+        const adventureData = [
+            {
+                type: 'pg', // Pilihan Ganda
+                title: 'Level 1: Gerbang Hutan Eksponen 🌲',
+                story: 'Kamu tiba di sebuah gerbang tua. Untuk membukanya, jawablah sandi di batu bersurat ini!',
+                question: 'Berapakah nilai dari \\({}^2 \\log 8\\)?',
+                options: ['2', '3', '4', '8'],
+                answer: 1, // index of '3'
+                explanation: 'Karena \\(2^3 = 8\\), maka \\({}^2 \\log 8 = 3\\).'
+            },
+            {
+                type: 'essay', // Isian Singkat
+                title: 'Level 2: Jembatan Basis 🌉',
+                story: 'Seekor Troll menjaga jembatan dan meminta tebusan berupa "angka ajaib".',
+                question: 'Jika \\({}^5 \\log 25 = x\\), ketiklah nilai \\(x\\) di bawah ini!',
+                answer: '2',
+                explanation: 'Logaritma mencari pangkat. \\(5^x = 25\\). Karena \\(5^2 = 25\\), maka nilai \\(x\\) adalah 2.'
+            },
+            {
+                type: 'multiselect', // Banyak Pilihan (Lebih dari 1)
+                title: 'Level 3: Kebun Jamur Ajaib 🍄',
+                story: 'Kumpulkan jamur yang bernilai "1" agar tenagamu pulih sepenuhnya!',
+                question: 'Pilih <b>semua</b> bentuk logaritma yang nilainya sama dengan 1:',
+                options: ['\\({}^3 \\log 3\\)', '\\({}^2 \\log 1\\)', '\\({}^{10} \\log 10\\)', '\\({}^5 \\log 0\\)'],
+                answer: [0, 2], // 3log3 dan 10log10
+                explanation: 'Sesuai sifat logaritma: \\({}^a \\log a = 1\\). Maka \\({}^3 \\log 3 = 1\\) dan \\({}^{10} \\log 10 = 1\\). Sedang \\({}^2 \\log 1 = 0\\).'
+            },
+            {
+                type: 'matching', // Memasangkan
+                title: 'Level 4: Gua Rahasia 🦇',
+                story: 'Dinding gua ini memiliki ukiran kuno. Pasangkan batu sebelah kiri dan kanan agar jalannya terbuka!',
+                question: 'Pasangkan bentuk pangkat dengan bentuk logaritmanya yang tepat!',
+                pairs: [
+                    { left: '\\(3^2 = 9\\)', right: '\\({}^3 \\log 9 = 2\\)' },
+                    { left: '\\(2^4 = 16\\)', right: '\\({}^2 \\log 16 = 4\\)' },
+                    { left: '\\(7^1 = 7\\)', right: '\\({}^7 \\log 7 = 1\\)' }
+                ],
+                explanation: 'Bentuk umum hubungan mereka adalah: Jika \\(a^c = b\\), maka setara dengan \\({}^a \\log b = c\\).'
+            },
+            {
+                type: 'pg',
+                title: 'Level 5: Tebing Penjumlahan 🧗',
+                story: 'Gunakan "tali" sifat logaritma untuk memanjat tebing yang tinggi ini.',
+                question: 'Berdasarkan sifat penjumlahan, hasil dari \\({}^2 \\log 4 + {}^2 \\log 8\\) sama dengan...',
+                options: ['\\({}^2 \\log 12\\)', '\\({}^2 \\log 32\\)', '5', 'Jawaban B dan C benar'],
+                answer: 3, // B dan C benar
+                explanation: '\\({}^2 \\log 4 + {}^2 \\log 8 = {}^2 \\log(4 \\times 8) = {}^2 \\log 32\\). Dan kita tahu nilai dari \\({}^2 \\log 32 = 5\\).'
+            },
+            {
+                type: 'essay',
+                title: 'Level 6: Arus Sungai Pengurangan 🛶',
+                story: 'Perahu ini hanya bisa bergerak jika kamu bisa menyederhanakan arusnya.',
+                question: 'Berapakah nilai dari: \\({}^3 \\log 81 - {}^3 \\log 9\\)?',
+                answer: '2',
+                explanation: 'Gunakan sifat pengurangan: \\({}^3 \\log(81 / 9) = {}^3 \\log 9\\). Karena \\(3^2 = 9\\), maka nilainya 2.'
+            },
+            {
+                type: 'matching',
+                title: 'Level 7: Ruang Ujian Kuno 🏛️',
+                story: 'Ada jebakan lantai di ruang ini. Cocokkan operasi dengan hasilnya untuk melangkah dengan aman!',
+                question: 'Pasangkan soal di kiri dengan jawaban yang benar di kanan.',
+                pairs: [
+                    { left: '\\({}^5 \\log 1\\)', right: '0' },
+                    { left: '\\({}^2 \\log 2\\)', right: '1' },
+                    { left: '\\({}^3 \\log 27\\)', right: '3' },
+                    { left: '\\({}^2 \\log(2^5)\\)', right: '5' }
+                ],
+                explanation: 'Ingat sifat-sifat dasar:\\({}^a \\log 1 = 0\\), \\({}^a \\log a = 1\\), dan sifat pangkat \\({}^a \\log a^n = n\\).'
+            },
+            {
+                type: 'multiselect',
+                title: 'Level 8: Kuil Sifat Suci ⛩️',
+                story: 'Ambil gulungan mantra (sifat logaritma) yang BENAR untuk melawan penjaga selanjutnya.',
+                question: 'Manakah dari pernyataan berikut yang <b>BENAR</b>? (Pilih yang benar saja)',
+                options: [
+                    '\\({}^a \\log 1 = 0\\)',
+                    '\\({}^a \\log a = 1\\)',
+                    '\\({}^a \\log(b/c) = {}^a \\log b + {}^a \\log c\\)',
+                    '\\({}^a \\log(b^n) = n \\times {}^a \\log b\\)'
+                ],
+                answer: [0, 1, 3],
+                explanation: 'Opsi ketiga SALAH, karena sifat pembagian seharusnya menghasilkan <b>pengurangan</b>, bukan penjumlahan.'
+            },
+            {
+                type: 'pg',
+                title: 'Level 9: Menghadapi Sang Penjaga 🗿',
+                story: 'Patung raksasa ini menggunakan variabel aljabar untuk mengecohmu!',
+                question: 'Jika diketahui \\({}^2 \\log 3 = p\\), maka berapakah nilai dari \\({}^2 \\log 9\\)?',
+                options: ['\\(p^2\\)', '\\(2p\\)', '\\(p/2\\)', '\\(3p\\)'],
+                answer: 1, // 2p
+                explanation: '\\({}^2 \\log 9 = {}^2 \\log (3^2)\\). Sifat pangkat maju ke depan: \\(2 \\times {}^2 \\log 3\\), sehingga menjadi \\(2p\\).'
+            },
+            {
+                type: 'pg',
+                title: 'Level 10: Puncak Naga Logaritma 🐉',
+                story: 'Kalahkan Bos Terakhir dengan senjata pamungkas: Sifat Rantai Logaritma!',
+                question: 'Berapakah nilai akhir dari: \\({}^2 \\log 3 \\times {}^3 \\log 5 \\times {}^5 \\log 16\\)?',
+                options: ['2', '3', '4', '8'],
+                answer: 2, // 4
+                explanation: 'Gunakan sifat rantai logaritma (coret basis dan numerus yang sama berurutan). Soal tersebut menjadi \\({}^2 \\log 16\\). Karena \\(2^4 = 16\\), nilainya adalah 4.'
+            }
+        ];
+
+        let currentLevel = 0;
+        let totalScore = 0;
+        let isLevelAnswered = false;
+        
+        // Variabel untuk game matching
+        let matchLeftSelection = null;
+        let matchRightSelection = null;
+        let matchedPairsCount = 0;
+
+        function initAdventureMap() {
+            const mapContainer = document.getElementById('adventure-map');
+            // Hapus isi map kecuali garis progress
+            Array.from(mapContainer.children).forEach(child => {
+                if(child.id !== 'progress-line' && !child.classList.contains('bg-gray-200')) {
+                    mapContainer.removeChild(child);
+                }
+            });
+
+            adventureData.forEach((_, i) => {
+                const node = document.createElement('div');
+                node.id = `map-node-${i}`;
+                node.className = `level-node w-10 h-10 rounded-full border-4 flex items-center justify-center font-bold text-sm bg-white border-gray-300 text-gray-400 z-10 bg-white`;
+                node.innerText = i + 1;
+                mapContainer.appendChild(node);
+            });
+            updateMapVisuals();
+        }
+
+        function updateMapVisuals() {
+            const mapContainer = document.getElementById('adventure-map');
+            const totalNodes = adventureData.length;
+            
+            // Update garis hijau progress
+            const progressPercentage = (currentLevel / (totalNodes - 1)) * 100;
+            document.getElementById('progress-line').style.width = `${progressPercentage}%`;
+
+            for(let i=0; i<totalNodes; i++) {
+                const node = document.getElementById(`map-node-${i}`);
+                node.className = `level-node w-10 h-10 rounded-full border-4 flex items-center justify-center font-bold text-sm z-10`;
+                
+                if (i < currentLevel) {
+                    node.classList.add('level-passed'); // Hijau
+                    node.innerHTML = '✓';
+                } else if (i === currentLevel) {
+                    node.classList.add('level-active'); // Kuning berkedip/besar
+                    node.innerHTML = i + 1;
+                } else {
+                    node.classList.add('bg-white', 'border-gray-300', 'text-gray-400'); // Belum terbuka
+                    node.innerHTML = i + 1;
+                }
+            }
+            
+            // Scroll peta agar node aktif terlihat
+            const activeNode = document.getElementById(`map-node-${currentLevel}`);
+            if(activeNode) {
+                activeNode.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+
+        function loadLevel() {
+            isLevelAnswered = false;
+            updateMapVisuals();
+            
+            document.getElementById('feedback-container').classList.add('hidden');
+            
+            const levelData = adventureData[currentLevel];
+            document.getElementById('level-title-badge').innerText = levelData.title;
+            document.getElementById('level-story').innerText = `"${levelData.story}"`;
+            document.getElementById('question-text').innerHTML = levelData.question;
+            
+            const inputArea = document.getElementById('dynamic-input-area');
+            inputArea.innerHTML = ''; // Bersihkan
+
+            // 1. Tipe Pilihan Ganda (PG)
+            if (levelData.type === 'pg') {
+                const grid = document.createElement('div');
+                grid.className = "grid grid-cols-1 md:grid-cols-2 gap-4";
+                levelData.options.forEach((opt, index) => {
+                    const btn = document.createElement('button');
+                    btn.innerHTML = opt;
+                    btn.className = "w-full text-left py-4 px-6 rounded-xl border-2 border-gray-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 font-semibold text-lg transition-all text-gray-700 shadow-sm";
+                    btn.onclick = () => submitAnswerPG(index, btn);
+                    grid.appendChild(btn);
+                });
+                inputArea.appendChild(grid);
+            }
+            
+            // 2. Tipe Isian Singkat (Essay)
+            else if (levelData.type === 'essay') {
+                inputArea.innerHTML = `
+                    <div class="max-w-md mx-auto">
+                        <input type="text" id="essay-input" autocomplete="off" 
+                            class="w-full text-center border-4 border-indigo-200 rounded-2xl p-4 text-2xl font-bold mb-4 focus:outline-none focus:border-indigo-500 shadow-inner" 
+                            placeholder="Ketik angka di sini...">
+                        <button onclick="submitAnswerEssay()" 
+                            class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 rounded-xl shadow transition-transform active:scale-95">
+                            Kunci Jawaban 🔒
+                        </button>
+                    </div>
+                `;
+            }
+
+            // 3. Tipe Multi-Select
+            else if (levelData.type === 'multiselect') {
+                inputArea.innerHTML = `<div id="ms-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"></div>
+                                      <button onclick="submitAnswerMultiSelect()" class="w-full md:w-1/2 mx-auto block bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 rounded-xl shadow transition-transform active:scale-95">
+                                          Kunci Pilihan 🔒
+                                      </button>`;
+                const msContainer = document.getElementById('ms-container');
+                levelData.options.forEach((opt, index) => {
+                    const btn = document.createElement('button');
+                    btn.innerHTML = opt;
+                    btn.setAttribute('data-index', index);
+                    btn.className = "ms-option w-full text-left py-4 px-6 rounded-xl border-2 border-gray-200 bg-white hover:bg-gray-50 font-semibold text-lg transition-all text-gray-700 shadow-sm flex items-center justify-between";
+                    // Tambahkan indikator checklist semu
+                    btn.innerHTML += `<span class="check-mark w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-transparent">✓</span>`;
+                    
+                    btn.onclick = function() {
+                        this.classList.toggle('ms-selected');
+                        const checkMark = this.querySelector('.check-mark');
+                        if (this.classList.contains('ms-selected')) {
+                            checkMark.classList.replace('border-gray-300', 'bg-indigo-500');
+                            checkMark.classList.replace('text-transparent', 'text-white');
+                            checkMark.classList.add('border-indigo-500');
+                        } else {
+                            checkMark.classList.replace('bg-indigo-500', 'border-gray-300');
+                            checkMark.classList.replace('text-white', 'text-transparent');
+                            checkMark.classList.remove('border-indigo-500');
+                        }
+                    };
+                    msContainer.appendChild(btn);
+                });
+            }
+
+            // 4. Tipe Matching (Memasangkan)
+            else if (levelData.type === 'matching') {
+                matchedPairsCount = 0;
+                matchLeftSelection = null;
+                matchRightSelection = null;
+                
+                // Acak urutan kanan agar tidak lurus
+                let rightIndices = levelData.pairs.map((_, i) => i);
+                rightIndices = rightIndices.sort(() => Math.random() - 0.5);
+
+                let html = `<div class="flex flex-col md:flex-row gap-8 justify-center">
+                                <div class="flex-1 flex flex-col gap-3" id="match-col-left">`;
+                
+                // Kolom Kiri
+                levelData.pairs.forEach((pair, i) => {
+                    html += `<button id="left-${i}" onclick="selectMatch('left', ${i}, this)" class="match-btn w-full p-4 border-2 rounded-xl bg-white shadow-sm text-center font-bold text-lg border-gray-300 text-indigo-800">${pair.left}</button>`;
+                });
+                html += `</div><div class="flex-1 flex flex-col gap-3" id="match-col-right">`;
+                
+                // Kolom Kanan (Diacak)
+                rightIndices.forEach((origIndex) => {
+                    html += `<button id="right-${origIndex}" onclick="selectMatch('right', ${origIndex}, this)" class="match-btn w-full p-4 border-2 rounded-xl bg-white shadow-sm text-center font-bold text-lg border-gray-300 text-pink-800">${levelData.pairs[origIndex].right}</button>`;
+                });
+                html += `</div></div>`;
+                inputArea.innerHTML = html;
+            }
+
+            // Render ulang matematika
+            renderMathInElement(document.getElementById('quiz-container'));
+        }
+
+        function triggerFeedback(isCorrect) {
+            isLevelAnswered = true;
+            const levelData = adventureData[currentLevel];
+            const feedbackContainer = document.getElementById('feedback-container');
+            const feedbackText = document.getElementById('feedback-text');
+            const feedbackExplanation = document.getElementById('feedback-explanation');
+
+            if (isCorrect) {
+                totalScore += 100; // Tiap soal 100 poin
+                document.getElementById('score-display').innerText = totalScore;
+                
+                feedbackText.innerHTML = "✨ Berhasil! Kamu Maju Satu Langkah!";
+                feedbackText.className = "text-2xl font-black text-green-500 mb-2";
+                feedbackExplanation.className = "bg-green-50 p-4 rounded-xl mb-6 text-green-900 border-2 border-green-200 text-left text-lg shadow-inner";
+                
+                confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+            } else {
+                feedbackText.innerHTML = "😅 Ouch! Langkahmu Terhenti Sejenak.";
+                feedbackText.className = "text-2xl font-black text-red-500 mb-2";
+                feedbackExplanation.className = "bg-red-50 p-4 rounded-xl mb-6 text-red-900 border-2 border-red-200 text-left text-lg shadow-inner";
+            }
+
+            feedbackExplanation.innerHTML = `<b>Petunjuk Pemandu:</b><br>${levelData.explanation}`;
+            
+            if (currentLevel === adventureData.length - 1) {
+                document.getElementById('next-btn').innerHTML = "Buka Peti Harta Karun 🏆";
+                document.getElementById('next-btn').classList.replace('from-green-400', 'from-yellow-400');
+                document.getElementById('next-btn').classList.replace('to-green-600', 'to-orange-500');
+            }
+
+            feedbackContainer.classList.remove('hidden');
+            renderMathInElement(feedbackExplanation);
+            
+            // Scroll ke bawah agar feedback terlihat di layar kecil
+            setTimeout(() => {
+                feedbackContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function submitAnswerPG(selectedIndex, btnElement) {
+            if (isLevelAnswered) return;
+            const levelData = adventureData[currentLevel];
+            const allButtons = document.getElementById('dynamic-input-area').querySelectorAll('button');
+
+            if (selectedIndex === levelData.answer) {
+                btnElement.classList.replace('border-gray-200', 'border-green-500');
+                btnElement.classList.replace('bg-white', 'bg-green-100');
+                btnElement.classList.add('text-green-800');
+                triggerFeedback(true);
+            } else {
+                btnElement.classList.replace('border-gray-200', 'border-red-500');
+                btnElement.classList.replace('bg-white', 'bg-red-100');
+                
+                // Highlight yang benar
+                allButtons[levelData.answer].classList.replace('border-gray-200', 'border-green-500');
+                allButtons[levelData.answer].classList.add('border-4', 'bg-green-50');
+                triggerFeedback(false);
+            }
+        }
+
+        function submitAnswerEssay() {
+            if (isLevelAnswered) return;
+            const levelData = adventureData[currentLevel];
+            const inputEl = document.getElementById('essay-input');
+            const userAnswer = inputEl.value.trim().toLowerCase();
+            const correctAnswer = levelData.answer.toLowerCase();
+
+            if (userAnswer === correctAnswer) {
+                inputEl.classList.replace('border-indigo-200', 'border-green-500');
+                inputEl.classList.add('bg-green-50', 'text-green-700');
+                triggerFeedback(true);
+            } else {
+                inputEl.classList.replace('border-indigo-200', 'border-red-500');
+                inputEl.classList.add('bg-red-50', 'text-red-700');
+                // Beri tahu jawaban yang benar di input
+                inputEl.value = `${userAnswer} ❌ (Benar: ${levelData.answer})`;
+                triggerFeedback(false);
+            }
+        }
+
+        function submitAnswerMultiSelect() {
+            if (isLevelAnswered) return;
+            const levelData = adventureData[currentLevel];
+            const selectedNodes = document.querySelectorAll('.ms-selected');
+            
+            let userSelection = [];
+            selectedNodes.forEach(node => {
+                userSelection.push(parseInt(node.getAttribute('data-index')));
+            });
+            userSelection.sort();
+            
+            // Cek apakah persis sama
+            const isCorrect = JSON.stringify(userSelection) === JSON.stringify(levelData.answer.sort());
+            
+            // Warnai semua opsi
+            const allOptions = document.querySelectorAll('.ms-option');
+            allOptions.forEach((opt, idx) => {
+                const isUserSelected = userSelection.includes(idx);
+                const isActuallyCorrect = levelData.answer.includes(idx);
+                
+                if (isActuallyCorrect) {
+                    opt.classList.add('border-green-500', 'border-4', 'bg-green-50'); // Highlight yang seharusnya dipilih
+                }
+                if (isUserSelected && !isActuallyCorrect) {
+                    opt.classList.add('border-red-500', 'bg-red-50'); // Highlight pilihan salah user
+                }
+                opt.style.pointerEvents = 'none'; // Matikan klik
+            });
+
+            triggerFeedback(isCorrect);
+        }
+
+        function selectMatch(side, id, btnElement) {
+            if (isLevelAnswered) return;
+            
+            if (side === 'left') {
+                if(matchLeftSelection) document.getElementById(`left-${matchLeftSelection.id}`).classList.remove('match-selected');
+                matchLeftSelection = { id: id, element: btnElement };
+                btnElement.classList.add('match-selected');
+            } else {
+                if(matchRightSelection) document.getElementById(`right-${matchRightSelection.id}`).classList.remove('match-selected');
+                matchRightSelection = { id: id, element: btnElement };
+                btnElement.classList.add('match-selected');
+            }
+
+            // Jika keduanya terpilih, cek kebenaran
+            if (matchLeftSelection && matchRightSelection) {
+                const leftId = matchLeftSelection.id;
+                const rightId = matchRightSelection.id;
+                
+                const lBtn = matchLeftSelection.element;
+                const rBtn = matchRightSelection.element;
+
+                if (leftId === rightId) {
+                    // Cocok!
+                    lBtn.classList.replace('match-selected', 'match-correct');
+                    rBtn.classList.replace('match-selected', 'match-correct');
+                    matchedPairsCount++;
+                    
+                    // Cek apakah level selesai
+                    if (matchedPairsCount === adventureData[currentLevel].pairs.length) {
+                        triggerFeedback(true);
+                    }
+                } else {
+                    // Salah!
+                    lBtn.classList.replace('match-selected', 'match-wrong');
+                    rBtn.classList.replace('match-selected', 'match-wrong');
+                    
+                    setTimeout(() => {
+                        if(lBtn) { lBtn.classList.remove('match-wrong'); lBtn.classList.remove('match-selected'); }
+                        if(rBtn) { rBtn.classList.remove('match-wrong'); rBtn.classList.remove('match-selected'); }
+                    }, 400);
+                }
+                
+                matchLeftSelection = null;
+                matchRightSelection = null;
+            }
+        }
+
+        function nextLevel() {
+            currentLevel++;
+            if (currentLevel < adventureData.length) {
+                loadLevel();
+            } else {
+                // Tamat
+                document.getElementById('quiz-container').classList.add('hidden');
+                document.getElementById('result-container').classList.remove('hidden');
+                document.getElementById('final-score').innerText = totalScore;
+                
+                if(totalScore >= 800) {
+                    // Pesta Confetti Meriah untuk skor tinggi
+                    var duration = 4000;
+                    var end = Date.now() + duration;
+                    (function frame() {
+                        confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 } });
+                        confetti({ particleCount: 6, angle: 120, spread: 55, origin: { x: 1 } });
+                        if (Date.now() < end) { requestAnimationFrame(frame); }
+                    }());
+                }
+            }
+        }
+
+        function resetPetualangan() {
+            currentLevel = 0;
+            totalScore = 0;
+            document.getElementById('score-display').innerText = totalScore;
+            document.getElementById('result-container').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            initAdventureMap();
+            loadLevel();
+        }
+
+        // --- 5. Inisialisasi awal ---
+        window.onload = function() {
+            switchTab('animasi');
+            initAdventureMap();
+            loadLevel();
+            const event = new Event('input');
+            slider.dispatchEvent(event);
+        };
+    </script>
+</body>
+</html>
